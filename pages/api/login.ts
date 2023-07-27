@@ -29,6 +29,7 @@ const loginRoute = async (
     },
   })
 
+
   // If user does not exist, return a 401 response
   if (!user) {
     return res.status(401).json({
@@ -62,6 +63,8 @@ const loginRoute = async (
           twoFactorToken,
         },
       })
+
+      console.log(user.email)
 
       //  Send email with specified token
       sendEmail({

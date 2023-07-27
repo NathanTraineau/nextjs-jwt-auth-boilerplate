@@ -1,35 +1,39 @@
-import * as nodemailer from 'nodemailer'
+
+import * as sgMail from '@sendgrid/mail'
+
 import { Options } from './types/mail'
 
 export async function sendEmail({ to, subject, text, html }: Options) {
+
+  if(!process.env.SENDGRID_API_KEY || !process.env.SMTP_FROM_ADDRESS) {
+    throw new Error('Environment variables not set')
+  }
   // create reusable transporter
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  })
-
-  // send mail with defined transport object
-  const info = await transporter.sendMail({
-    from: `\"${process.env.SMTP_FROM_NAME}\" <${process.env.SMTP_FROM_ADDRESS}>`,
-    to: Array.isArray(to) ? to : [to], // list of receivers
-    subject, // Subject line
-    text, // plain text body
-    html, // html body
-  })
-
-  return info
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY )
+  const msg = {
+    to, // Change to your recipient
+    from: process.env.SMTP_FROM_ADDRESS  , 
+    subject,
+    text,
+    html,
+  }
+  console.log(msg)
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log('Email sent')
+    })
+    .catch((error) => {
+      console.error(error)
+      console.log(error.response.body)
+    })
 }
 
 export function generateProfileConfirmationBodyPlain(token: string) {
   return `
     Hi,
     You have updated your email address.
-    Please click the following link to confirm your your new email address:
+    Please click the following link to confirm your new email address:
     ${process.env.APP_URL}/confirm-email/${token}
     Thank you,
   `

@@ -23,6 +23,14 @@ const seed = async () => {
         password: password,
         role: 'ADMIN',
       },
+      {
+        id: 3,
+        name: 'Nathan',
+        surname: 'Nath',
+        email: 'nathan.traineau@wanadoo.fr',
+        password: password,
+        role: 'ADMIN',
+      },
     ]
 
     console.log('Seeding users...')

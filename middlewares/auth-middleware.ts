@@ -4,55 +4,72 @@ import { verifyToken } from '../lib/jwt'
 import { ApiResponse } from '../lib/types/api'
 import { UserSession } from '../lib/types/auth'
 import { Middleware } from '../lib/types/middleware'
-import { prisma } from '../lib/db'
+import { serialize } from 'cookie'; 
+import { RefreshApiResponse } from '../pages/api/refresh'
 
 export type NextApiRequestWithUser = NextApiRequest & {
   user: UserSession
 }
 
 // middleware.ts
-export const authMiddleware: Middleware = async <T extends ApiResponse<T>>(
+export const authMiddleware: Middleware =  async   <T extends ApiResponse<T>>(
   req: NextApiRequestWithUser,
   res: NextApiResponse<T>,
   next?: Middleware
 ) => {
   // look for access token inside cookies
-  const token =
-    req.cookies && req.cookies.token ? req.cookies.token.split(' ')[0] : null
-  if (!token) {
+  const cookies = req.cookies; // The "cookies" object contains all the cookies sent with the request
+  const refreshToken = cookies.refreshToken; 
+  
+  const accessToken = cookies.accessToken;// 'refreshToken' is the name of the cookie
+console.log("qqqqqqqqqqqqqqqq",accessToken)
+  if (!accessToken) {
     return res.status(401).json({
       success: false,
-      message: 'Missing token',
+      message: 'Missing accessToken',
     } as T)
   }
 
   // Check if access token is valid
   try {
     const decoded = await verifyToken(
-      token,
+      accessToken,
       process.env.JWT_ACCESS_TOKEN_SECRET as string
     )
 
-    // Ensure that a user has done 2 factor authentication (is twoFactorToken is NULL)
-    const user = await prisma.user.findUnique({
-      where: {
-        id: decoded.id,
-      },
-    })
+    if (!decoded) {
+      // We try to refresh
+      const response = await fetch('/api/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+        credentials: 'include', 
+      })
+        .then(refreshRes => refreshRes.json() as Promise<RefreshApiResponse>)
+        if(response?.success){
 
-    if (!user) {
+         const cookieSerialized = serialize('accessToken', response.data?.token || "", {
+          sameSite: 'strict',
+          path: '/', // Adjust the path based on your requirements
+          maxAge: 30 * 24 * 60 * 60, // Expiration time in seconds (30 days in this example)
+        });
+        req.cookies.accessToken = response.data?.token
+      
+        // Set the cookie in the response headers
+        res.setHeader('Set-Cookie', cookieSerialized);
+
+        console.log("newwwwww",req.cookies.accessToken )
+    }
+    else{
       return res.status(401).json({
         success: false,
-        message: 'Invalid token',
+        message: 'You have to login',
       } as T)
-    } else {
-      if (user.twoFactorToken) {
-        return res.status(401).json({
-          success: false,
-          message: '2 factor authentication is required, check your email',
-        } as T)
-      }
     }
+    
+    } 
 
     // Add user to request
     req.user = decoded
@@ -60,10 +77,7 @@ export const authMiddleware: Middleware = async <T extends ApiResponse<T>>(
     // and call next()
     if (next) await next(req, res, undefined)
 
-    // Else, return
-    return res.status(200)
   } catch (error) {
-    // If token is just expired, try to refresh it
     if (error instanceof TokenExpiredError) {
       // answer with special error code
       return res.status(498).json({

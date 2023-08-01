@@ -38,16 +38,7 @@ const NavbarProfile = ({ currentUser, onLogOut }: INavbarProfileProps) => {
                 name={currentUser.name + ' ' + currentUser.name}
                 bg={'white'}
               />
-              <VStack
-                display={{ base: 'none', md: 'flex' }}
-                alignItems="flex-start"
-                spacing="1px"
-                ml="2"
-              >
-                <Text fontSize="sm" color="white">
-                  {currentUser.name} {currentUser.surname}
-                </Text>
-              </VStack>
+
               <Box display={{ base: 'none', md: 'flex' }}>
                 <FiChevronDown color="white" />
               </Box>

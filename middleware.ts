@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
   // Check if a user session exists
-  if (!request.cookies.get('token')) {
-    if (request.nextUrl.pathname != '/login') {
+  if (!request.cookies.get('accessToken')) {
+ 
+    if (request.nextUrl.pathname != '/login' && request.nextUrl.pathname != '/signup' && request.nextUrl.pathname != '/two-factor') {
+      console.log("hasss to be redirected")
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }

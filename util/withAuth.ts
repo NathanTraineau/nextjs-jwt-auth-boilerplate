@@ -1,10 +1,19 @@
 import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import { verifyAccessToken } from '../lib/auth'
 import { prisma } from '../lib/db'
+import Cookie from 'cookie-universal'
+
 
 const redirectToLogin = {
   redirect: {
     destination: '/login',
+    permanent: false,
+  },
+}
+
+const redirectToHome = {
+  redirect: {
+    destination: '/',
     permanent: false,
   },
 }
@@ -24,11 +33,12 @@ const withAuth = async <T extends Object = any>(
   }
 ): Promise<GetServerSidePropsResult<T>> => {
   // Get the user's session based on the request
-  if (req.cookies.token) {
+  const accessToken = req.cookies.accessToken
+  if (accessToken) {
     // Get token from cookie
-    const token = req.cookies.token.split(' ')[0]
+    const token = accessToken.split(' ')[0]
 
-    // Dececode user token and get user data
+    // Decode user token and get user data
     return verifyAccessToken(token)
       .then(async decoded => {
         // Now, check if user has done 2 factor authentication
@@ -40,19 +50,24 @@ const withAuth = async <T extends Object = any>(
 
         // If user has not done 2 factor authentication, redirect to 2 factor authentication page
         if (!user) {
+          console.log("redirectToLogin1")
           return redirectToLogin
         } else if (options.twoFactorEnabled && user.twoFactorToken) {
+          console.log("redirectToLogin2")
           return redirectToLogin
         } else {
           // If user has done 2 factor authentication, call onSuccess function
           return onSuccess()
+      
         }
       })
-      .catch(err => {
-        console.log(err)
+      .catch(async err => {
+        console.log("redirectToLogin3")
         return redirectToLogin
-      })
+      } )
+    
   } else {
+    console.log("redirectToLogin4")
     return redirectToLogin
   }
 }

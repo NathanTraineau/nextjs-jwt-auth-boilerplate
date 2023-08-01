@@ -64,10 +64,13 @@ export const verifyAccessToken = (token: string) => {
     throw new Error('ACCESS_TOKEN_SECRET is not set')
   }
 
-  return verifyToken(token, process.env.JWT_ACCESS_TOKEN_SECRET)
+  const res = verifyToken(token, process.env.JWT_ACCESS_TOKEN_SECRET)
+
+  return res
 }
 
 export const verifyTwoFactorToken = (token: string) => {
+  console.log('verifyTwoFactorToken')
   // If environment variable is not set, throw an error
   if (!process.env.JWT_TWO_FACTOR_TOKEN_SECRET) {
     throw new Error('JWT_TWO_FACTOR_TOKEN_SECRET is not set')

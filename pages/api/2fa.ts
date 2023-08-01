@@ -46,6 +46,7 @@ const twoFactorAuthRoute = async (
       },
       data: {
         twoFactorToken: null,
+        emailVerified: true,
       },
     })
 

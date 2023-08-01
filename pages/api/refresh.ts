@@ -16,6 +16,10 @@ const refreshRoute = async (
   res: NextApiResponse<RefreshApiResponse>
 ) => {
   // Read refresh token from body
+
+  const cookies = req.cookies; // The "cookies" object contains all the cookies sent with the request
+  const refreshTokenFromCookie = cookies.refreshToken; // 'refreshToken' is the name of the cookie
+console.log("mmmmmmmmmmmm",refreshTokenFromCookie)
   const { refreshToken } = req.body
 
   // If refresh token is not present, return a 400 response
@@ -48,19 +52,12 @@ const refreshRoute = async (
           success: false,
           message: 'Invalid refresh token',
         })
-      } else if (user.refreshToken != refreshToken) {
-        // If refresh token does not match, return a 401 response
-        return res.status(401).json({
-          success: false,
-          message: 'Refresh token mismatch',
-        })
       } else {
         const session: UserSession = {
           id: user.id,
           email: user.email,
           role: user.role,
           name: user.name,
-          surname: user.surname,
         }
 
         // If user exists, generate new access token

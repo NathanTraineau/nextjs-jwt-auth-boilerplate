@@ -13,16 +13,10 @@ import {
 import { useRouter } from 'next/router'
 import { verifyTwoFactorToken } from '../lib/auth'
 import { prisma } from '../lib/db'
-import withAuth from '../util/withAuth'
 
 type AvailableStatus = 'success' | 'error' | 'info'
 
-export const getServerSideProps = (context: GetServerSidePropsContext) =>
-  withAuth<{
-    validationState: AvailableStatus
-  }>(
-    context,
-    async () => {
+export const getServerSideProps = (context: GetServerSidePropsContext) => {
       if (!context.query.token) {
         return {
           props: {
@@ -39,7 +33,7 @@ export const getServerSideProps = (context: GetServerSidePropsContext) =>
                 id: decoded.id,
               },
             })
-
+console.log(user, decoded)
             // If user has the same two factor code, then we can log them in
             if (
               user &&
@@ -52,6 +46,7 @@ export const getServerSideProps = (context: GetServerSidePropsContext) =>
                 },
                 data: {
                   twoFactorToken: null,
+                  emailVerified: true,
                 },
               })
 
@@ -76,16 +71,13 @@ export const getServerSideProps = (context: GetServerSidePropsContext) =>
             }
           })
       }
-    },
-    {
-      twoFactorEnabled: false,
     }
-  )
 
 const TwoFactor: NextPage<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ validationState }) => {
   const router = useRouter()
+  console.log("heeeeeeeeeeeeeeer")
   
   if (validationState == 'info') {
     return (
@@ -135,7 +127,7 @@ const TwoFactor: NextPage<
             Two Factor Authentication
           </AlertTitle>
           <AlertDescription maxWidth="sm">
-            You have been successfully authenticated. You will be redirected to
+            You have been successfully sign up. You will be redirected to
             the home page in a few seconds.
           </AlertDescription>
         </Alert>

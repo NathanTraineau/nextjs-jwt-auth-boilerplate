@@ -7,7 +7,7 @@ import { RefreshApiResponse } from '../pages/login/login'
  * @param isRetrying Whether this is a retry after a token refresh
  * @returns The response from the fetch
  */
-const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
+export const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
   fetch(url)
     .then(async res => {
       // Check if response is ok
@@ -17,30 +17,26 @@ const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
           throw new Error('Unable to refresh token')
         }
 
-        // Access refresh token via local storage
-        const refreshToken = localStorage.getItem('refreshToken')
-
         // Token expired, refresh it and retry the request using recursion
-        return fetch('/api/refresh', {
+        return  fetch('/api/refresh', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ refreshToken }),
+          body: JSON.stringify({}),
+          credentials: 'include', 
         })
           .then(refreshRes => refreshRes.json() as Promise<RefreshApiResponse>)
           .then(refreshRes => {
             if (refreshRes.success && refreshRes.data) {
               // Update the new access token in cookies
               const cookie = Cookie()
-              cookie.set('token', refreshRes.data.token)
-
-              // Retry the request
-              return fetcher<T>(url, true)
+              cookie.set('accessToken', refreshRes.data.token)
+              return refreshRes
             } else {
               throw new Error('Unable to refresh token')
             }
-          })
+          }).then(() => fetcher<T>(url, true))
       } else if (!res.ok) {
         throw new Error(res.statusText)
       } else {
@@ -51,4 +47,3 @@ const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
       throw new Error(err)
     })
 
-export default fetcher

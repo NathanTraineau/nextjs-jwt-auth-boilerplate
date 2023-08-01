@@ -113,13 +113,11 @@ The `useAuth` hook is a React hook that can be used to easily manage the user se
 
 The `useAuth` hook is defined in the `providers/auth/AuthProvider.tsx` file and is used in the `pages/_app.tsx` file to wrap the entire application. This is the list of the features provided by the `useAuth` hook:
 
-- `currentUser`: The current user session information, such as the user ID, E-Mail address, name, surname and role
+- `currentUser`: The current user session information, such as the user ID, E-Mail address, name and role
 - `accessToken`: The JWT access token used to access the protected resources
 - `refreshToken`: The JWT refresh token used to obtain a new access token when the current access token expires
-- `isAuthenticated`: A boolean value that indicates if the user is authenticated
 - `login(username: string, password: string)`: A function that can be used to authenticate users
 - `logOut()`: A function that can be used to logout the user
-- `refreshSession()`: A function that can be used to refresh the user session
 
 ### 5.2 Route protection
 
@@ -138,7 +136,6 @@ The JWT access token and the JWT refresh token have the following payload:
   "sub": <user id>,
   "email": <user email>,
   "name": <user first name>,
-  "surname": <user last name>,
   "role": <user role: ADMIN or USER>,
   "iat": <issued at timestamp>,
   "exp": <expire at timestamp>,

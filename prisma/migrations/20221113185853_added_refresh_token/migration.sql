@@ -7,7 +7,6 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "surname" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'USER',
     "refreshToken" TEXT,
 

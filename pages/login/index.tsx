@@ -14,7 +14,6 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-
 import { useForm } from 'react-hook-form'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 import { useAuth } from '../../providers/auth/AuthProvider'
@@ -34,28 +33,26 @@ const LoginPage = () => {
   const { logIn } = useAuth()
 
   const onSubmit = async (data: LoginData) => {
-    await logIn(data)
-      .then(() => {
-        toast({
-          title: 'Success',
-          description: 'You have successfully logged in',
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        })
-
-        // Redirect to home page
-        router.push('/two-factor')
+    try {
+      await logIn(data)
+      toast({
+        title: 'Success',
+        description: 'You have successfully logged in',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
       })
-      .catch(err => {
-        toast({
-          title: 'Authentication error',
-          description: err.message,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        })
+      // Redirect to home page
+      router.push('/')
+    } catch (err) {
+      toast({
+        title: 'Authentication error',
+        description: "We couldn't log you in",
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
       })
+    }
   }
 
   return (
@@ -71,19 +68,16 @@ const LoginPage = () => {
               required: true,
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'invalid email address',
+                message: 'Invalid email address',
               },
             })}
           />
         </FormControl>
-
-        {/* Show error  */}
         {errors.email && (
           <Text fontSize="sm" color="red.500">
             {errors.email.message}
           </Text>
         )}
-
         <FormControl mt={4} isInvalid={!!errors.password}>
           <InputGroup>
             <Input
@@ -91,6 +85,10 @@ const LoginPage = () => {
               placeholder="Password"
               {...register('password', {
                 required: true,
+                minLength: {
+                  value: 6,
+                  message: 'Password must be at least 6 characters',
+                },
               })}
             />
             <InputRightElement>
@@ -103,6 +101,11 @@ const LoginPage = () => {
             </InputRightElement>
           </InputGroup>
         </FormControl>
+        {errors.password && (
+          <Text fontSize="sm" color="red.500">
+            {errors.password.message}
+          </Text>
+        )}
         <Button type="submit" mt={4} isLoading={isSubmitting}>
           Log In
         </Button>

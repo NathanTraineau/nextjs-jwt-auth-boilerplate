@@ -10,7 +10,6 @@ const seed = async () => {
       {
         id: 1,
         name: 'John',
-        surname: 'Rossi',
         email: 'user@lucadibello.ch',
         password: password,
         role: 'USER',
@@ -18,18 +17,18 @@ const seed = async () => {
       {
         id: 2,
         name: 'Jane',
-        surname: 'White',
         email: 'admin@lucadibello.ch',
         password: password,
         role: 'ADMIN',
+        emailVerified: true,
       },
       {
         id: 3,
         name: 'Nathan',
-        surname: 'Nath',
         email: 'nathan.traineau@wanadoo.fr',
         password: password,
         role: 'ADMIN',
+        emailVerified: true,
       },
     ]
 

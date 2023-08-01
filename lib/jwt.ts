@@ -10,9 +10,12 @@ export const generateToken = <T extends Object | string>(
   secret: string,
   expiresIn: string | number | undefined
 ) => {
-  return sign(payload, secret, {
-    expiresIn,
+  const token = sign(payload, secret, {
+    expiresIn 
   })
+
+console.log("tokennnnnn",token)
+  return token
 }
 
 export const verifyToken = (
@@ -25,6 +28,7 @@ export const verifyToken = (
         if (err || !decoded) {
           return reject(err)
         }
+        
         const userDecoded = decoded as UserSession
         // Now, convert decoded to UserSession by removing additional properties
         const userSession: UserSession = {
@@ -32,8 +36,8 @@ export const verifyToken = (
           email: userDecoded.email,
           role: userDecoded.role,
           name: userDecoded.name,
-          surname: userDecoded.surname,
         }
+        console.log(userSession, 'userSession')
         resolve(userSession)
       })
     } catch (err) {

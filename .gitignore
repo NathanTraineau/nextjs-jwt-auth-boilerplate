@@ -30,6 +30,7 @@ package-lock.json
 yarn.lock
 
 # Environment variables
+.env
 .env.locale
 .env.development.local
 .env.test.local

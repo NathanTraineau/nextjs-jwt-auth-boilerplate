@@ -1,9 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { UserSession } from '../../lib/types/auth'
 import { LoginApiResponse } from '../../pages/login/login'
-import Cookies  from 'universal-cookie';
-import { useRouter } from 'next/router';
-
+import Cookies from 'universal-cookie'
+import { useRouter } from 'next/router'
 
 interface AuthContextData {
   currentUser: UserSession | null
@@ -24,20 +23,24 @@ const AuthContext = createContext<AuthContextData>({
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [currentUser, setCurrentUser] = useState<UserSession | null>(null)
 
-  const router = useRouter(); // Get the router instance
+  const router = useRouter() // Get the router instance
 
-  const cookies = new Cookies();
+  const cookies = new Cookies()
 
   // Watch currentUser
   useEffect(() => {
     if (!currentUser) {
-        const user = cookies.get('currentUser');
-        console.log(user)
-        setCurrentUser(user ? typeof user === 'object' ? user : JSON.parse(user)  as UserSession : null);
+      const user = cookies.get('currentUser')
+      console.log(user)
+      setCurrentUser(
+        user
+          ? typeof user === 'object'
+            ? user
+            : (JSON.parse(user) as UserSession)
+          : null
+      )
     }
-  }, [currentUser, setCurrentUser]);
-
-
+  }, [currentUser, setCurrentUser])
 
   const logIn = async (data: LoginData) => {
     return new Promise<void>((resolve, reject) => {
@@ -53,17 +56,14 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         .then(res => {
           if (res.success && res.data) {
             // save access token in cookies
-         
+
             cookies.set('accessToken', res.data.token, {
               path: '/',
-            });
-
+            })
 
             cookies.set('currentUser', res.data.session, {
               path: '/',
-            });      
-            
-    
+            })
 
             // save user data inside state
             setCurrentUser(res.data.session)
@@ -81,31 +81,27 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   const logOut = async () => {
-
     await fetch('/api/logout')
 
     // Clear provider state
     setCurrentUser(null)
 
-    
-
     //Remove cookies
-    cookies.set('accessToken', "", {
+    cookies.set('accessToken', '', {
       path: '/',
-    });
+    })
 
-    cookies.set('currentUser', "", {
+    cookies.set('currentUser', '', {
       path: '/',
-    });
+    })
 
-    cookies.set('refreshToken', "", {
-      httpOnly:true,
-      secure:true,
+    cookies.set('refreshToken', '', {
+      httpOnly: true,
+      secure: true,
       path: '/',
-    });    
-    
-    router.push('/login');
+    })
 
+    router.push('/login')
   }
 
   return (

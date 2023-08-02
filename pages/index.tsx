@@ -1,12 +1,5 @@
-import {
-  Box,
-  Divider,
-  Heading,
-  HStack,
-  Text,
-  useToast,
-} from '@chakra-ui/react'
-import { GetServerSidePropsContext, InferGetServerSidePropsType, NextPage } from 'next'
+import { Box, Divider, Heading, HStack, Text, useToast } from '@chakra-ui/react'
+import { InferGetServerSidePropsType, NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR, { SWRConfig } from 'swr'
 import Navbar from '../components/Navbar'
@@ -16,10 +9,9 @@ import { useAuth } from '../providers/auth/AuthProvider'
 import { prisma } from '../lib/db'
 import PostLibrary from '../components/PostLibrary'
 import { PostsApiResponse } from './api/posts'
-import withAuth from '../util/withAuth'
 import { fetcher } from '../util/fetcher'
 
-export const getServerSideProps = (context: GetServerSidePropsContext) => withAuth(context, async () => {
+export const getServerSideProps = async () => {
   // `getStaticProps` is executed on the server side.
   const posts = await prisma.post.findMany()
 
@@ -40,30 +32,25 @@ export const getServerSideProps = (context: GetServerSidePropsContext) => withAu
       },
     },
   }
-})
+}
 
 const HomePage: NextPage<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ fallback }) => {
-
-
   const handleClick = async () => {
     try {
       // Effectuez l'appel API vers "api/test"
-      const response = await fetch('/api/test');
+      const response = await fetch('/api/test')
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json()
       } else {
       }
     } catch (error) {
-      console.error('Erreur lors de l\'appel API :', error);
+      console.error("Erreur lors de l'appel API :", error)
     }
   }
 
-  const {
-    currentUser,
-    logOut,
-  } = useAuth()
+  const { currentUser, logOut } = useAuth()
   const router = useRouter()
   const toast = useToast()
 
@@ -72,9 +59,10 @@ const HomePage: NextPage<
     data: posts,
     error,
     mutate,
-  } = useSWR<PostsApiResponse>('/api/posts', fetcher, {  // Ne pas effectuer de requête lors du montage initial
-  refreshInterval: 50000, // Rafraîchir les données toutes les 5 secondes
-})
+  } = useSWR<PostsApiResponse>('/api/posts', fetcher, {
+    // Ne pas effectuer de requête lors du montage initial
+    refreshInterval: 50000, // Rafraîchir les données toutes les 5 secondes
+  })
 
   return (
     <SWRConfig value={{ fallback }}>
@@ -95,7 +83,7 @@ const HomePage: NextPage<
           ]
         }
       />
-      
+
       <Box marginTop={'60px'} p={6}>
         <Heading>Your profile</Heading>
         <Divider mb={5} />

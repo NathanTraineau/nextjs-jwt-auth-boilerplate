@@ -1,14 +1,16 @@
 // middleware.ts
-import { NextRequest, NextResponse  } from 'next/server'
-import { NextRouter } from 'next/router';
-import { parse } from 'url';
-
+import { NextRequest, NextResponse } from 'next/server'
+import { NextRouter } from 'next/router'
+import { parse } from 'url'
 
 export function middleware(request: NextRequest, router: NextRouter) {
   // Check if a user session exists
-  if (!request.cookies.get('accessToken') || request.cookies.get('accessToken')?.value === ""){
-    const allowedPaths = ['/login', '/signup', '/two-factor'];
-    const currentPath = parse(request.url).pathname || '/';
+  if (
+    !request.cookies.get('accessToken') ||
+    request.cookies.get('accessToken')?.value === ''
+  ) {
+    const allowedPaths = ['/login', '/signup', '/two-factor']
+    const currentPath = parse(request.url).pathname || '/'
 
     if (!allowedPaths.includes(currentPath)) {
       return NextResponse.redirect(new URL('/login', request.url))

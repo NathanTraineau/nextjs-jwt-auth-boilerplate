@@ -10,10 +10,14 @@ const signUpRoute = async (
   res: NextApiResponse<SignUpApiResponse>
 ) => {
   // Extract email and password from request body
-  const { email, password, name } = req.body as { email: string; password: string;name: string; }
+  const { email, password, name } = req.body as {
+    email: string
+    password: string
+    name: string
+  }
 
   // If email or password is not present, return a 400 response
-  if (!email || !password || !name ) {
+  if (!email || !password || !name) {
     return res.status(400).json({
       success: false,
       message: 'Missing ane element of the form',
@@ -27,7 +31,6 @@ const signUpRoute = async (
     },
   })
 
-
   // If user does not exist, return a 401 response
   if (user) {
     return res.status(401).json({
@@ -36,16 +39,17 @@ const signUpRoute = async (
     })
   } else {
     // If user exists, check if password is correct using auth lib
-   
-    const createUser = await prisma.user.create({data:{email, password, name}})
-      // Keep only fields defined in SessionUser
-      emailVerificationRoute({id: createUser.id}, res)
-      // return access and refresh token
-      return res.status(200).json({
-        success: true,
-      })
-    }
-  }
 
+    const createUser = await prisma.user.create({
+      data: { email, password, name },
+    })
+    // Keep only fields defined in SessionUser
+    emailVerificationRoute({ id: createUser.id }, res)
+    // return access and refresh token
+    return res.status(200).json({
+      success: true,
+    })
+  }
+}
 
 export default withMiddlewares(signUpRoute)

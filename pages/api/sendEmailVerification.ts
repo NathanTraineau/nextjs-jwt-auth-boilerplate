@@ -12,9 +12,7 @@ const emailVerificationRoute = async (
   res: NextApiResponse<SignUpApiResponse>
 ) => {
   // Extract email and password from request body
-  const {  id } = req.body as { id: number; }
-
-
+  const { id } = req.body as { id: number }
 
   // Check if user exists in database
   const user = await prisma.user.findUnique({
@@ -23,7 +21,6 @@ const emailVerificationRoute = async (
     },
   })
 
-
   // If user does not exist, return a 401 response
   if (!user) {
     return res.status(401).json({
@@ -31,42 +28,39 @@ const emailVerificationRoute = async (
       message: 'No user found',
     })
   } else {
-   
-      // Keep only fields defined in SessionUser
-      const session: UserSession = {
+    // Keep only fields defined in SessionUser
+    const session: UserSession = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    }
+
+    // should i use this session object to do that ? role, name may change...
+    const twoFactorToken = auth.generateTwoFactorToken(session)
+    // save refresh token + second factor auth to database
+    await prisma.user.update({
+      where: {
         id: user.id,
-        email: user.email,
-        name:user.name,
-        role: user.role,
-      }
+      },
+      data: {
+        twoFactorToken,
+      },
+    })
 
-      // should i use this session object to do that ? role, name may change...
-      const twoFactorToken = auth.generateTwoFactorToken(session)
-      // save refresh token + second factor auth to database
-      await prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          twoFactorToken,
-        },
-      })
+    //  Send email with specified token
+    sendEmail({
+      to: user.email,
+      subject: 'Sign Up',
+      text: `Click this link to login...`,
+      html: `<a href="http://localhost:3000/two-factor?token=${twoFactorToken}">Click here to login</a>`,
+    })
 
-
-      //  Send email with specified token
-      sendEmail({
-        to: user.email,
-        subject: 'Sign Up',
-        text: `Click this link to login...`,
-        html: `<a href="http://localhost:3000/two-factor?token=${twoFactorToken}">Click here to login</a>`,
-      })
-
-      // return access and refresh token
-      return {
-        success: true,
-      }
+    // return access and refresh token
+    return {
+      success: true,
     }
   }
-
+}
 
 export default withMiddlewares(emailVerificationRoute)

@@ -17,66 +17,63 @@ import { prisma } from '../lib/db'
 type AvailableStatus = 'success' | 'error' | 'info'
 
 export const getServerSideProps = (context: GetServerSidePropsContext) => {
-      if (!context.query.token) {
+  if (!context.query.token) {
+    return {
+      props: {
+        validationState: 'info',
+      },
+    }
+  } else {
+    // Now extract user from token
+    return verifyTwoFactorToken(context.query.token as string)
+      .then(async decoded => {
+        // Now, check if user has the same two factor code
+        const user = await prisma.user.findUnique({
+          where: {
+            id: decoded.id,
+          },
+        })
+        // If user has the same two factor code, then we can log them in
+        if (user && user.twoFactorToken === (context.query.token as string)) {
+          // Update user's email token
+          await prisma.user.update({
+            where: {
+              id: decoded.id,
+            },
+            data: {
+              twoFactorToken: null,
+              emailVerified: true,
+            },
+          })
+
+          return {
+            props: {
+              validationState: 'success' as AvailableStatus,
+            },
+          }
+        } else {
+          return {
+            props: {
+              validationState: 'error' as AvailableStatus,
+            },
+          }
+        }
+      })
+      .catch(() => {
         return {
           props: {
-            validationState: 'info',
+            validationState: 'error' as AvailableStatus,
           },
         }
-      } else {
-        // Now extract user from token
-        return verifyTwoFactorToken(context.query.token as string)
-          .then(async decoded => {
-            // Now, check if user has the same two factor code
-            const user = await prisma.user.findUnique({
-              where: {
-                id: decoded.id,
-              },
-            })
-            // If user has the same two factor code, then we can log them in
-            if (
-              user &&
-              user.twoFactorToken === (context.query.token as string)
-            ) {
-              // Update user's email token
-              await prisma.user.update({
-                where: {
-                  id: decoded.id,
-                },
-                data: {
-                  twoFactorToken: null,
-                  emailVerified: true,
-                },
-              })
-
-              return {
-                props: {
-                  validationState: 'success' as AvailableStatus,
-                },
-              }
-            } else {
-              return {
-                props: {
-                  validationState: 'error' as AvailableStatus,
-                },
-              }
-            }
-          })
-          .catch(() => {
-            return {
-              props: {
-                validationState: 'error' as AvailableStatus,
-              },
-            }
-          })
-      }
-    }
+      })
+  }
+}
 
 const TwoFactor: NextPage<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ validationState }) => {
   const router = useRouter()
-  
+
   if (validationState == 'info') {
     return (
       <Flex h="100vh" w="100vw" justifyContent={'center'} alignItems="center">
@@ -125,8 +122,8 @@ const TwoFactor: NextPage<
             Two Factor Authentication
           </AlertTitle>
           <AlertDescription maxWidth="sm">
-            You have been successfully sign up. You will be redirected to
-            the home page in a few seconds.
+            You have been successfully sign up. You will be redirected to the
+            home page in a few seconds.
           </AlertDescription>
         </Alert>
       </Flex>

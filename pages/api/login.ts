@@ -6,7 +6,7 @@ import * as auth from '../../lib/auth'
 import { UserSession } from '../../lib/types/auth'
 import { LoginApiResponse } from '../login/login'
 import emailVerificationRoute from './sendEmailVerification'
-import cookie from 'cookie';
+import cookie from 'cookie'
 
 const loginRoute = async (
   req: NextApiRequest,
@@ -15,7 +15,7 @@ const loginRoute = async (
   // Extract email and password from request body
   const { email, password } = req.body as { email: string; password: string }
   // If email or password is not present, return a 400 response
-  if (!email || !password ) {
+  if (!email || !password) {
     return res.status(400).json({
       success: false,
       message: 'Missing email or password',
@@ -29,22 +29,21 @@ const loginRoute = async (
     },
   })
 
-
   // If user does not exist, return a 401 response
   if (!user) {
     return res.status(401).json({
       success: false,
       message: 'Invalid email or password',
     })
-  }else if(!user.emailVerified){ 
-       //  Send email with specified token
-       
-      emailVerificationRoute({body : {id: user.id}}, res)
-      return res.status(401).json({
-        success: false,
-        message: 'You should verify you email first, one email has been sent to you',
-      })
-      
+  } else if (!user.emailVerified) {
+    //  Send email with specified token
+
+    emailVerificationRoute({ body: { id: user.id } }, res)
+    return res.status(401).json({
+      success: false,
+      message:
+        'You should verify you email first, one email has been sent to you',
+    })
   } else {
     // If user exists, check if password is correct using auth lib
     if (await auth.verifyPassword(password, user.password)) {
@@ -70,17 +69,16 @@ const loginRoute = async (
         },
       })
 
-
       // return access and refresh token
-      res.setHeader('Set-Cookie', cookie.serialize('refreshToken', String(refreshToken), {
-        httpOnly: true,
-        secure:true,
-        maxAge: 60 * 60 * 24 * 7 // 1 week
-      }));
+      res.setHeader(
+        'Set-Cookie',
+        cookie.serialize('refreshToken', String(refreshToken), {
+          httpOnly: true,
+          secure: true,
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+        })
+      )
 
-
-
-      
       return res.status(200).json({
         success: true,
         data: {

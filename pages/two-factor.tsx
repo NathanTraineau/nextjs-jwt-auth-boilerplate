@@ -33,7 +33,6 @@ export const getServerSideProps = (context: GetServerSidePropsContext) => {
                 id: decoded.id,
               },
             })
-console.log(user, decoded)
             // If user has the same two factor code, then we can log them in
             if (
               user &&
@@ -77,7 +76,6 @@ const TwoFactor: NextPage<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ validationState }) => {
   const router = useRouter()
-  console.log("heeeeeeeeeeeeeeer")
   
   if (validationState == 'info') {
     return (

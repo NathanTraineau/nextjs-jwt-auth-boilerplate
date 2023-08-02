@@ -49,7 +49,6 @@ const votePostById = async (
     },
   })
 
-  console.log('HASVOTED: ', hasVoted)
 
   // If user has already voted, remove the vote
   if (hasVoted) {
@@ -107,7 +106,6 @@ const votePostById = async (
       })
     }
 
-    console.log('DATA: ', data)
 
     // If removed downvote, increment post upvote count + add upvote
     const updatedPost = await prisma.post.update({

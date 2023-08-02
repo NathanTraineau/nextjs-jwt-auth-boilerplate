@@ -1,5 +1,6 @@
 import Cookie from 'cookie-universal'
 import { RefreshApiResponse } from '../pages/login/login'
+import { useRouter } from 'next/router'; // Import useRouter hook
 
 /**
  * Fetcher is a wrapper around fetch that adds the necessary headers and handles token refresh
@@ -7,8 +8,8 @@ import { RefreshApiResponse } from '../pages/login/login'
  * @param isRetrying Whether this is a retry after a token refresh
  * @returns The response from the fetch
  */
-export const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
-  fetch(url)
+export const fetcher = <T>(url: string,request:RequestInit,  isRetrying = false): Promise<T> =>
+  fetch(url,request)
     .then(async res => {
       // Check if response is ok
       if (res.status == 498) {
@@ -36,7 +37,7 @@ export const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
             } else {
               throw new Error('Unable to refresh token')
             }
-          }).then(() => fetcher<T>(url, true))
+          }).then(() => fetcher<T>(url, request, true))
       } else if (!res.ok) {
         throw new Error(res.statusText)
       } else {
@@ -44,6 +45,8 @@ export const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
       }
     })
     .catch(err => {
-      throw new Error(err)
+      const router = useRouter(); // Initialize useRouter hook
+        router.push('/login'); // Redirect to /login page
+      throw new Error(err);
     })
 

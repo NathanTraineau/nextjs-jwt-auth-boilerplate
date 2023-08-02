@@ -70,7 +70,6 @@ export const verifyAccessToken = (token: string) => {
 }
 
 export const verifyTwoFactorToken = (token: string) => {
-  console.log('verifyTwoFactorToken')
   // If environment variable is not set, throw an error
   if (!process.env.JWT_TWO_FACTOR_TOKEN_SECRET) {
     throw new Error('JWT_TWO_FACTOR_TOKEN_SECRET is not set')

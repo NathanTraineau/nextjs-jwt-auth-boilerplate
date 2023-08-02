@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { UserSession } from '../../lib/types/auth'
-import { LoginApiResponse, RefreshApiResponse } from '../../pages/login/login'
+import { LoginApiResponse } from '../../pages/login/login'
 import Cookies  from 'universal-cookie';
+import { useRouter } from 'next/router';
 
 
 interface AuthContextData {
@@ -23,20 +24,16 @@ const AuthContext = createContext<AuthContextData>({
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [currentUser, setCurrentUser] = useState<UserSession | null>(null)
 
+  const router = useRouter(); // Get the router instance
+
   const cookies = new Cookies();
 
   // Watch currentUser
   useEffect(() => {
     if (!currentUser) {
-      // Essayer d'obtenir l'utilisateur à partir du cookie
-      const userCookie = document.cookie
-        .split(';')
-        .find(cookie => cookie.trim().startsWith('currentUser='));
-
-      if (userCookie) {
-        const user = decodeURIComponent(userCookie.split('=')[1]);
-        setCurrentUser(JSON.parse(user) as UserSession);
-      }
+        const user = cookies.get('currentUser');
+        console.log(user)
+        setCurrentUser(user ? typeof user === 'object' ? user : JSON.parse(user)  as UserSession : null);
     }
   }, [currentUser, setCurrentUser]);
 
@@ -64,8 +61,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
             cookies.set('currentUser', res.data.session, {
               path: '/',
-            });        
-
+            });      
+            
+    
 
             // save user data inside state
             setCurrentUser(res.data.session)
@@ -82,19 +80,32 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     })
   }
 
-  const logOut = () => {
+  const logOut = async () => {
+
+    await fetch('/api/logout')
 
     // Clear provider state
     setCurrentUser(null)
+
+    
 
     //Remove cookies
     cookies.set('accessToken', "", {
       path: '/',
     });
 
-    cookies.set('user', "", {
+    cookies.set('currentUser', "", {
       path: '/',
     });
+
+    cookies.set('refreshToken', "", {
+      httpOnly:true,
+      secure:true,
+      path: '/',
+    });    
+    
+    router.push('/login');
+
   }
 
   return (

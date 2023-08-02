@@ -42,7 +42,6 @@ const emailVerificationRoute = async (
 
       // should i use this session object to do that ? role, name may change...
       const twoFactorToken = auth.generateTwoFactorToken(session)
-console.log("twoFactorToken",twoFactorToken)
       // save refresh token + second factor auth to database
       await prisma.user.update({
         where: {

@@ -49,14 +49,11 @@ const HomePage: NextPage<
 
   const handleClick = async () => {
     try {
-      console.log("clicckckkckc")
       // Effectuez l'appel API vers "api/test"
       const response = await fetch('/api/test');
       if (response.ok) {
         const data = await response.json();
-        console.log('Réponse de API :', data);
       } else {
-        console.log('La requête API a échoué.');
       }
     } catch (error) {
       console.error('Erreur lors de l\'appel API :', error);
@@ -75,7 +72,9 @@ const HomePage: NextPage<
     data: posts,
     error,
     mutate,
-  } = useSWR<PostsApiResponse>('/api/posts', fetcher)
+  } = useSWR<PostsApiResponse>('/api/posts', fetcher, {  // Ne pas effectuer de requête lors du montage initial
+  refreshInterval: 50000, // Rafraîchir les données toutes les 5 secondes
+})
 
   return (
     <SWRConfig value={{ fallback }}>

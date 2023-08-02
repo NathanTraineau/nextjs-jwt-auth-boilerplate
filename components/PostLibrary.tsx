@@ -21,8 +21,9 @@ import Image from 'next/image'
 import { FiArrowDown, FiArrowUp, FiTrash } from 'react-icons/fi'
 import { KeyedMutator } from 'swr'
 import { memo, useMemo } from 'react'
-import { PostVoteApiResponse } from '../pages/api/posts/[id]/vote'
 import { useAuth } from '../providers/auth/AuthProvider'
+import { fetcher } from '../util/fetcher'
+import { PostVoteApiResponse } from '../pages/api/posts/[id]/vote'
 
 interface IPostLibraryProps {
   posts?: PostsApiResponse
@@ -166,7 +167,7 @@ const PostLibrary = ({
 }: IPostLibraryProps) => {
   const onVote = (post: Post, kind: 'UPVOTE' | 'DOWNVOTE') => {
     // Send API request to /api/posts/[id]/downvote
-    fetch(`/api/posts/${post.id}/vote`, {
+    fetcher<PostVoteApiResponse>(`/api/posts/${post.id}/vote`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -175,7 +176,6 @@ const PostLibrary = ({
         kind,
       }),
     })
-      .then(res => res.json() as Promise<PostVoteApiResponse>)
       .then(res => {
         if (res.success) {
           if (res.data?.upvotes && res.data?.votes && posts?.data) {
@@ -202,13 +202,13 @@ const PostLibrary = ({
   }
 
   const onClear = (post: Post) => {
-    fetch(`/api/posts/${post.id}/clear`, {
+    fetcher<PostVoteApiResponse>(`/api/posts/${post.id}/clear`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
     }).then(res => {
-      if (res.ok) {
+      if (res.success) {
         // mutate posts
         mutate()
       } else {

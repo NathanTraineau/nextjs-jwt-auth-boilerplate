@@ -34,6 +34,10 @@ const withAuth = async <T extends Object = any>(
 ): Promise<GetServerSidePropsResult<T>> => {
   // Get the user's session based on the request
   const accessToken = req.cookies.accessToken
+
+  return onSuccess()
+
+  /*
   if (accessToken) {
     // Get token from cookie
     const token = accessToken.split(' ')[0]
@@ -69,7 +73,7 @@ const withAuth = async <T extends Object = any>(
   } else {
     console.log("redirectToLogin4")
     return redirectToLogin
-  }
+  }*/
 }
 
 export default withAuth

@@ -14,10 +14,8 @@ const loginRoute = async (
 ) => {
   // Extract email and password from request body
   const { email, password } = req.body as { email: string; password: string }
-console.log("req.body", req.body)
   // If email or password is not present, return a 400 response
   if (!email || !password ) {
-    console.log("yyyyyyyyyyyyiii")
     return res.status(400).json({
       success: false,
       message: 'Missing email or password',

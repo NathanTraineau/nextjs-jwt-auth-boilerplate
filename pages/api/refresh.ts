@@ -18,9 +18,8 @@ const refreshRoute = async (
   // Read refresh token from body
 
   const cookies = req.cookies; // The "cookies" object contains all the cookies sent with the request
-  const refreshTokenFromCookie = cookies.refreshToken; // 'refreshToken' is the name of the cookie
-console.log("mmmmmmmmmmmm",refreshTokenFromCookie)
-  const { refreshToken } = req.body
+  const refreshToken = cookies.refreshToken; // 'refreshToken' is the name of the cookie
+
 
   // If refresh token is not present, return a 400 response
   if (!refreshToken) {
@@ -52,7 +51,7 @@ console.log("mmmmmmmmmmmm",refreshTokenFromCookie)
           success: false,
           message: 'Invalid refresh token',
         })
-      } else {
+      } else if(user.refreshToken === refreshToken) {
         const session: UserSession = {
           id: user.id,
           email: user.email,
@@ -62,7 +61,6 @@ console.log("mmmmmmmmmmmm",refreshTokenFromCookie)
 
         // If user exists, generate new access token
         const token = generateAccessToken(session)
-
         // return new access token
         return res.status(200).json({
           success: true,
@@ -70,11 +68,12 @@ console.log("mmmmmmmmmmmm",refreshTokenFromCookie)
             token,
           },
         })
-      }
-    } else {
-      // Trigger error manually
-      throw new Error('Invalid refresh token')
-    }
+      
+    } 
+    
+    throw new Error('Invalid refresh token')
+    
+  }
   } catch (e) {
     console.log(e)
     // If they don't match, return a 401 response

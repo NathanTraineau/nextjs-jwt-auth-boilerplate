@@ -17,7 +17,6 @@ export async function sendEmail({ to, subject, text, html }: Options) {
     text,
     html,
   }
-  console.log(msg)
   sgMail
     .send(msg)
     .then(() => {

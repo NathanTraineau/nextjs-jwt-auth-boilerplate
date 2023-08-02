@@ -4,6 +4,7 @@ import { withMiddlewares } from '../../middlewares'
 import { prisma } from '../../lib/db'
 import { SignUpApiResponse } from '../signup/signup'
 import emailVerificationRoute from './sendEmailVerification'
+import bcrypt from 'bcrypt'
 
 const signUpRoute = async (
   req: NextApiRequest,
@@ -16,8 +17,10 @@ const signUpRoute = async (
     name: string
   }
 
+  const encryptedPassword = await bcrypt.hash(password, 10)
+
   // If email or password is not present, return a 400 response
-  if (!email || !password || !name) {
+  if (!email || !encryptedPassword || !name) {
     return res.status(400).json({
       success: false,
       message: 'Missing ane element of the form',
@@ -41,10 +44,12 @@ const signUpRoute = async (
     // If user exists, check if password is correct using auth lib
 
     const createUser = await prisma.user.create({
-      data: { email, password, name },
+      data: { id: 7, email, password: encryptedPassword, name },
     })
-    // Keep only fields defined in SessionUser
-    emailVerificationRoute({ id: createUser.id }, res)
+
+    console.log(createUser)
+
+    emailVerificationRoute({ body: { id: createUser.id } }, res)
     // return access and refresh token
     return res.status(200).json({
       success: true,

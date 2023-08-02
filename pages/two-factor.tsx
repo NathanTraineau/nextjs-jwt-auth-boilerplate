@@ -103,7 +103,7 @@ const TwoFactor: NextPage<
   } else if (validationState == 'success') {
     // Redirect to dashboard after 5 seconds
     setTimeout(() => {
-      router.push('/')
+      router.push('/login')
     }, 5000)
 
     return (
@@ -123,12 +123,15 @@ const TwoFactor: NextPage<
           </AlertTitle>
           <AlertDescription maxWidth="sm">
             You have been successfully sign up. You will be redirected to the
-            home page in a few seconds.
+            login page in a few seconds.
           </AlertDescription>
         </Alert>
       </Flex>
     )
   } else if (validationState == 'error') {
+    setTimeout(() => {
+      router.push('/login')
+    }, 5000)
     return (
       <Flex h="100vh" w="100vw" justifyContent={'center'} alignItems="center">
         <Alert
@@ -145,8 +148,7 @@ const TwoFactor: NextPage<
             Two Factor Authentication
           </AlertTitle>
           <AlertDescription maxWidth="sm">
-            This link is invalid or has expired. Please, log in again to get a
-            new link.
+            This link is invalid or has expired.
           </AlertDescription>
         </Alert>
       </Flex>

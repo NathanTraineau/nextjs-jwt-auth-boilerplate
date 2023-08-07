@@ -1,0 +1,97 @@
+# Etape de construction
+FROM node:18-slim AS base
+
+RUN apt-get update && apt-get upgrade -y && apt-get -qy install openssl
+# Install PostgreSQL client and gcloud SDK
+RUN apt-get install -y postgresql-client curl
+RUN curl -sSL https://sdk.cloud.google.com | bash
+ENV PATH $PATH:/root/google-cloud-sdk/bin/
+
+
+# Installez le Cloud SQL Proxy dans le conteneur
+# Vous pouvez vérifier la dernière version du proxy ici : https://cloud.google.com/sql/docs/mysql/sql-proxy#install
+ADD https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 /usr/local/bin/cloud_sql_proxy
+RUN chmod +x /usr/local/bin/cloud_sql_proxy
+WORKDIR /app
+# Copy the Cloud SQL key file to the container
+COPY key-access-db.json /app
+
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apt-get install -y libc6-dev
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+
+# Rebuild the source code only when needed
+FROM deps AS builder
+WORKDIR /app
+COPY prisma ./prisma/
+# COPY ENV variable
+COPY .env ./
+COPY . .
+
+
+
+
+# Générer la base de données
+RUN npx prisma generate
+
+
+RUN yarn build
+
+# If using npm comment out above and use below instead
+# RUN npm run build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
+
+#RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nathantraineau
+
+COPY --from=builder /app/public ./public
+
+# Set the path to the Cloud SQL key file
+ENV GOOGLE_APPLICATION_CREDENTIALS /app/key-access-db.json
+
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+
+
+# Install prisma globally as root
+USER root
+RUN yarn global add prisma
+
+
+
+USER nathantraineau
+
+
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME localhost
+
+CMD ["node", "server.js"]
+
+# Run the cloud_sql_proxy
+CMD ["cloud_sql_proxy", "instances=INSTANCE_CONNECTION_NAME=tcp:5432"]

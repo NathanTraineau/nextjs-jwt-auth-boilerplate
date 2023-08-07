@@ -1,0 +1,46 @@
+version: '3'
+services:
+  app:
+    image: next-prisma-docker
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: deploy
+    #volumes:
+    # - .:/app
+    ports:
+      - 3000:3000
+    env_file:
+      - ./.env
+    networks:
+      - manager-app-network
+    depends_on:
+      - cloudsql
+      - postgres
+  cloudsql:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.0.0
+    volumes:
+      - type: bind
+        source: ./key-access-db.json
+        target: /key-access-db.json
+        read_only: true
+    networks:
+      - manager-app-network
+    ports:
+      - target: 3306
+        published: 13306
+    command: --address 0.0.0.0 --port 3306 --credentials-file /key-access-db.json decoded-battery-384203:northamerica-northeast1:ping-pong-db
+  postgres: # Ajout du service PostgreSQL
+    image: postgres:latest # Remplacez 'latest' par la version spécifique de PostgreSQL que vous souhaitez utiliser
+    volumes:
+      - postgres-data:/var/lib/postgresql/data # Volume pour persister les données de la base de données PostgreSQL
+    ports:
+      - '5432:5432' # Port pour se connecter à la base de données PostgreSQL
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@127.0.0.1/pingpong
+networks:
+  manager-app-network:
+    name: manager-app-network
+    driver: bridge
+volumes:
+  postgres-data: # Définition du volume pour PostgreSQL

@@ -6,8 +6,6 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  VStack,
-  Text,
 } from '@chakra-ui/react'
 import { UserSession } from '../lib/types/auth'
 import { FiChevronDown, FiLogOut } from 'react-icons/fi'

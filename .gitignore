@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Sentry
 .sentryclirc
+
+# Key files
+key-access-db.json

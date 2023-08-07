@@ -40,11 +40,6 @@ const HomePage: NextPage<
   const handleClick = async () => {
     try {
       // Effectuez l'appel API vers "api/test"
-      const response = await fetch('/api/test')
-      if (response.ok) {
-        const data = await response.json()
-      } else {
-      }
     } catch (error) {
       console.error("Erreur lors de l'appel API :", error)
     }

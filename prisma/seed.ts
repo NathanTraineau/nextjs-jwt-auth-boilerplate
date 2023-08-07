@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { prisma } from '../lib/db'
 
 const seed = async () => {

@@ -4,7 +4,7 @@ import { withMiddlewares } from '../../middlewares'
 import { prisma } from '../../lib/db'
 import { SignUpApiResponse } from '../signup/signup'
 import emailVerificationRoute from './sendEmailVerification'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 
 const signUpRoute = async (
   req: NextApiRequest,

@@ -1,6 +1,6 @@
 import { generateToken, verifyToken } from './jwt'
 
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { UserSession } from './types/auth'
 
 export const generateAccessToken = (payload: UserSession): string => {
